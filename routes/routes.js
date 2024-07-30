@@ -179,7 +179,7 @@ routes.post('/keepInformations', async(req, res) =>
             typeInfo: item.typeInfo,
             id_post: item.id_post,
             idUsuario: item.idUsuario,
-            actived: item.actived,
+            actived: item.actived
         })
         .then((response) => 
         {
@@ -187,7 +187,7 @@ routes.post('/keepInformations', async(req, res) =>
         })
         .catch((error) => 
         {
-            console.log(error)
+            console.log('O erro foi: ' + error)
         })
 
         res.status(200).send('Informações armazenadas')
