@@ -192,6 +192,8 @@ routes.post('/keepInformations', async(req, res) =>
 
         res.status(200).send('Informações armazenadas')
     });
+
+    res.send(createAll)
 })
 
 routes.delete('/deleteInfo:id', async(req, res) => 
