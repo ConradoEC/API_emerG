@@ -174,6 +174,8 @@ routes.post('/keepInformations', async(req, res) =>
 {
     var createAll = req.body
     
+    console.log(createAll)
+
     createAll.forEach(async(item) => {
         const keepInformations = await newInformationModel.create({
             typeInfo: item.typeInfo,
