@@ -151,8 +151,8 @@ routes.post('/createPost', async(req, res) =>
     {
         const newPost = await newPostModel.create({
             post_id_ong: item.post_id_ong,
-            post_ong_name: 'exemplo',
-            post_ong_email: 'exemplo email',
+            post_ong_name: 'Erick',
+            post_ong_email: 'erick@gmail.com',
             post_ong_logo: '11111',
             post_image: item.post_image,
             post_documents: '11111',
