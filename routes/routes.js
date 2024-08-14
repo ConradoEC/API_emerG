@@ -171,29 +171,23 @@ routes.post('/createPost', async(req, res) =>
 })
 
 routes.post('/keepInformations', async(req, res) =>
-{
-    var createAll = req.body
-    
-    createAll.forEach(async(item) => {
-        const keepInformations = await newInformationModel.create({
-            typeInfo: item.typeInfo,
-            id_post: item.id_post,
-            idUsuario: item.idUsuario,
-            actived: item.actived
-        })
-        .then((response) => 
-        {
-            console.log('response: ' + response)
-        })
-        .catch((error) => 
-        {
-            console.log('O erro foi: ' + error)
-        })
+{    
+    const keepInformations = await newInformationModel.create({
+        typeInfo: req.body.typeInfo,
+        id_post: req.body.id_post,
+        idUsuario: req.body.idUsuario,
+        actived: req.body.actived
+    })
+    .then((response) => 
+    {
+        console.log('response: ' + response)
+    })
+    .catch((error) => 
+    {
+        console.log('O erro foi: ' + error)
+    })
 
-        res.status(200).send('Informações armazenadas')
-    });
-
-    res.send(createAll)
+    res.status(200).send('Informações armazenadas')
 })
 
 routes.delete('/deleteInfo:id', async(req, res) => 
