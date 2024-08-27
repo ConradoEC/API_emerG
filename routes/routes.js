@@ -12,6 +12,7 @@ const newPostModel = require('../bd_access/bd_models/newPost.js')
 const newReportModel = require('../bd_access/bd_models/newReport.js')
 const newInformationModel = require('../bd_access/bd_models/newInformations.js')
 const newOngModel = require('../bd_access/bd_models/newOngs.js')
+const newUserModel = require('../bd_access/bd_models/newUsers.js')
 
 routes.get('/', (req, res) => 
 {
@@ -188,6 +189,28 @@ routes.post('/keepInformations', async(req, res) =>
     })
 
     res.status(200).send('Informações armazenadas')
+})
+
+routes.post('/newUser', async(req, res) => 
+{
+    const newUser = await newUserModel.create({
+        nomeUsuarioF: req.body.nomeUsuarioF,
+        sobrenomeUsuarioF: req.body.sobrenomeUsuarioF,
+        cpfUsuarioF: req.body.cpfUsuarioF,
+        emailUsuarioF: req.body.emailUsuarioF,
+        celularUsuarioF: req.body.celularUsuarioF,
+        enderecoUsuarioF: req.body.enderecoUsuarioF,
+        cidadeUsuarioF: req.body.cidadeUsuarioF,
+        bairroUsuarioF: req.body.bairroUsuarioF,
+        cepUsuarioF: req.body.cepUsuarioF,
+        doarF: req.body.doarF
+    })
+    .then((response) => {
+        res.send('Usuário criado com sucesso')
+    })
+    .catch((error) => {
+        console.log(error)
+    })
 })
 
 routes.delete('/deleteInfo:id', async(req, res) => 
