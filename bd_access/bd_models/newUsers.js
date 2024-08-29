@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     },
     cpfUsuarioF: {
         type: String,
-        allowNull
+        allowNull: false
     },
     emailUsuarioF: {
         type: String,
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
     },
     bairroUsuarioF: {
         type: String,
-        allowNull
+        allowNull: false
     },
     cepUsuarioF: {
         type: String,
