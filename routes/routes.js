@@ -1,11 +1,19 @@
 const express = require('express')
+const path = require('path')
 const routes = express.Router()
 const mysql = require('mysql2')
 const mongoose = require('mongoose')
-const connectionMongoDB = require('../bd_access/connectionMongoDB.js')
+const multer = require('multer')
+const fs = require('fs')
+const mongodb = require('mongodb')
+const Grid = require('gridfs-stream')
+// O multer-gridfs-storage recebe o arquivo e o passa para o GridFS.
+// O GridFS divide o arquivo em chunks menores e armazena cada chunk na coleção fs.chunks
+// const GridFsStorage = require('multer-gridfs-storage').GridFsStorage
+const GridFsStorage = require('multer-gridfs-storage').GridFsStorage
+const {connectionMongoDB} = require('../bd_access/connectionMongoDB.js')
+// connectionMongoDB()
 routes.use(express.json())
-
-connectionMongoDB()
 
 const newMarkerModel = require('../bd_access/bd_models/newMarkers.js')
 const newPostModel = require('../bd_access/bd_models/newPost.js')
@@ -13,6 +21,44 @@ const newReportModel = require('../bd_access/bd_models/newReport.js')
 const newInformationModel = require('../bd_access/bd_models/newInformations.js')
 const newOngModel = require('../bd_access/bd_models/newOngs.js')
 const newUserModel = require('../bd_access/bd_models/newUsers.js')
+
+
+const { GridFSBucket } = require('mongodb')
+var gfs
+
+mongoose.connect(`mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retryWrites=true&w=majority&appName=emerG`)
+    .then(async() => 
+    {
+        console.log('Banco conectado')
+        const db = mongoose.connection.db
+        // Essa parte é a configuração do GridFS, que seria uma ferramenta que vai fragmentar o arquivo em pequenas partes para que ele possa ser armazenado. O nome dado para ele foi 'uploads'
+        gfs = new GridFSBucket(db, {bucketName: 'uploads'})
+        // const collections = await db.listCollections().toArray()
+    })    
+    .catch((error) =>
+    {
+        console.log('Não foi possível conectar por causa do erro ---> ' + error)
+    })
+
+
+const data = new Date()
+const time = String(data.getTime())
+
+// Estamos configurando o multer. Ele é o responsável por tratar o arquivo. Aqui estamos indicando que esse arquivo será armazenado em um banco de dados remoto (através da URL) e que o nome que esse arquivo receberá será o seu nome normal + a data de envio do arquivo e também definimos que o Bucket (GridFS) a ser utilizado é o 'uploads'
+const multerConfig = new GridFsStorage({
+    url: 'mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retryWrites=true&w=majority&appName=emerG',
+    file: (req, file) => ({
+        bucketName: 'uploads',
+        filename: `${file.originalname.split('.')[0]}_${time}`,
+        metadata: {
+            originalName: file.originalname
+        }
+    })
+})
+
+
+// Estamos falando que a variável 'upload' vai receber o multer porém com a configuração que fizemos anteriormente
+const upload = multer({ storage: multerConfig })
 
 routes.get('/', (req, res) => 
 {
@@ -77,6 +123,11 @@ routes.get('/posts', async(req, res) =>
         console.log(error)
         res.send('Não foi possível adquirir as informações desejadas')
     })
+})
+
+routes.get('/archieves', (req, res) => 
+{
+   
 })
 
 routes.post('/createMarker', async(req, res) =>
@@ -156,7 +207,7 @@ routes.post('/createPost', async(req, res) =>
             post_ong_email: 'erick@gmail.com',
             post_ong_logo: '11111',
             post_image: item.post_image,
-            post_documents: '11111',
+            post_documents: item.post_file,
             post_description: item.post_description,
         })
         .then((response) =>
@@ -169,6 +220,12 @@ routes.post('/createPost', async(req, res) =>
             console.log('O erro foi: ' + error)
         })
     })
+})
+
+routes.post('/uploadFile', upload.single('file'), (req, res) => 
+{
+    console.log(req.file)
+    res.status(200).send('Arquivo Armazenado')
 })
 
 routes.post('/keepInformations', async(req, res) =>

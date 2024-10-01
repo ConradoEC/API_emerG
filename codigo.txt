@@ -1,0 +1,61 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const multer = require('multer');
+const multerGridFsStorage = require('multer-gridfs-storage');
+const cors = require('cors');
+const { GridFSBucket } = require('mongodb');
+
+const app = express();
+const port = 3000;
+
+// Conexão com o MongoDB
+const mongoURI = 'mongodb://localhost:27017/mydatabase';
+
+const conn = mongoose.createConnection(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
+let gfs;
+
+conn.once('open', () => {
+  gfs = new GridFSBucket(conn.db, { bucketName: 'uploads' });
+  console.log('MongoDB connected');
+});
+
+// Configuração do multer para GridFS
+const storage = new multerGridFsStorage({
+  url: mongoURI,
+  file: (req, file) => ({
+    bucketName: 'uploads',
+    filename: file.originalname,
+    metadata: {
+      originalName: file.originalname,
+    },
+  }),
+});
+
+const upload = multer({ storage });
+
+// Middleware para CORS
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Rota para upload de arquivos
+app.post('/upload', upload.single('file'), (req, res) => {
+  res.send('Arquivo enviado com sucesso');
+});
+
+// Rota para download de arquivos
+app.get('/file/:filename', (req, res) => {
+  const { filename } = req.params;
+  gfs.openDownloadStreamByName(filename).pipe(res);
+});
+
+// Servir arquivos estáticos
+app.use(express.static('public'));
+
+app.listen(port, () => {
+  console.log(`Servidor rodando em http://localhost:${port}`);
+});
