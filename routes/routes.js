@@ -30,9 +30,9 @@ mongoose.connect(`mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retry
     .then(async() => 
     {
         console.log('Banco conectado')
-        const db = mongoose.connection.db
+        const db = await mongoose.connection.db
         // Essa parte é a configuração do GridFS, que seria uma ferramenta que vai fragmentar o arquivo em pequenas partes para que ele possa ser armazenado. O nome dado para ele foi 'uploads'
-        gfs = new GridFSBucket(db, {bucketName: 'uploads'})
+        gfs = await new GridFSBucket(db, {bucketName: 'uploads'})
         // const collections = await db.listCollections().toArray()
     })    
     .catch((error) =>
