@@ -125,9 +125,26 @@ routes.get('/posts', async(req, res) =>
     })
 })
 
-routes.get('/archieves', (req, res) => 
+routes.get('/archieves', async(req, res) => 
 {
-   
+    const files = await gfs.find().toArray()
+    .then((files) => {
+            res.json(files)
+    })
+    .catch((error) => {
+            console.log(error)
+    })
+})
+
+routes.get('/downloadArchieve/:filename', (req, res) => {
+    // O que é uma Stream? - É uma sequência de dados que pode ser lida ou escrita. São usados para manipular dados, como arquivos e dados de rede.
+    gfs.openDownloadStreamByName(req.params.filename)
+    // O método "pipe" é usado para direcionar a saída de um stream (de leitura) para outro stream (de escrita). Ele basicamente conecta o output de um stream diretamente com o input de outro.
+    // Nesse exemplo, o pipe está sendo utilizado para indicar que o "res" (resposta HTTP) receberá a stream de leitura para poder mostrar para o usuário, então o "res" é a stream de escrita
+    .pipe(res)
+    .on('error', (err) => {
+        res.send(err)
+    })
 })
 
 routes.post('/createMarker', async(req, res) =>
