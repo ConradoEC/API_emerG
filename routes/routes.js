@@ -1,5 +1,6 @@
 const express = require('express')
 const path = require('path')
+const crypto = require('crypto')
 const routes = express.Router()
 const mysql = require('mysql2')
 const mongoose = require('mongoose')
@@ -14,6 +15,7 @@ const GridFsStorage = require('multer-gridfs-storage').GridFsStorage
 const {connectionMongoDB} = require('../bd_access/connectionMongoDB.js')
 // connectionMongoDB()
 routes.use(express.json())
+var id_combine
 
 const newMarkerModel = require('../bd_access/bd_models/newMarkers.js')
 const newPostModel = require('../bd_access/bd_models/newPost.js')
@@ -41,15 +43,15 @@ mongoose.connect(`mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retry
     })
 
 
-const data = new Date()
-const time = String(data.getTime())
+// const data = new Date()
+// const time = String(data.getTime())
 
 // Estamos configurando o multer. Ele é o responsável por tratar o arquivo. Aqui estamos indicando que esse arquivo será armazenado em um banco de dados remoto (através da URL) e que o nome que esse arquivo receberá será o seu nome normal + a data de envio do arquivo e também definimos que o Bucket (GridFS) a ser utilizado é o 'uploads'
 const multerConfig = new GridFsStorage({
     url: 'mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retryWrites=true&w=majority&appName=emerG',
     file: (req, file) => ({
         bucketName: 'uploads',
-        filename: `${file.originalname.split('.')[0]}_${time}`,
+        filename: `${id_combine}_${file.originalname.split('.')[1]}`,
         metadata: {
             originalName: file.originalname
         }
@@ -216,16 +218,17 @@ routes.post('/createPost', async(req, res) =>
     var createAll = await req.body
     console.log(req.body)
 
-    createAll.forEach(async(item) => 
-    {
+     crypto.randomBytes(12, async(err, buf) => {
+        id_combine = buf.toString('hex')
+
         const newPost = await newPostModel.create({
-            post_id_ong: item.post_id_ong,
+            post_id_ong: createAll[0].post_id_ong,
             post_ong_name: 'Erick',
             post_ong_email: 'erick@gmail.com',
             post_ong_logo: '11111',
-            post_image: item.post_image,
-            post_documents: item.post_file,
-            post_description: item.post_description,
+            post_image: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_png`,
+            post_documents: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_pdf`,
+            post_description: createAll[0].post_description,
         })
         .then((response) =>
         {
@@ -239,10 +242,24 @@ routes.post('/createPost', async(req, res) =>
     })
 })
 
-routes.post('/uploadFile', upload.single('file'), (req, res) => 
+routes.post('/uploadFile', upload.array('files'), async(req, res) => 
 {
-    console.log(req.file)
-    res.status(200).send('Arquivo Armazenado')
+    // Se eu tivesse que fazer o upload de apenas um arquivo, daria pra usar o "upload.single('files')" sem precisar do "gfs" e manipular streams, porém, nesse caso podemos ter mais de um arquivo, então precisamos fazer um forEach para poder armazenar todos.
+    // res.status(200).send('Arquivo Armazenado')
+    console.log(req.files)
+    if(!req.files)
+    {
+        // res.send('Nenhum arquivo encontrado')
+        console.log('Nenhum arquivo encontrado')
+    }
+    else
+    {
+        res.status(200).send('Arquivos armazenados');
+    }
+
+
+    // res.send(res.status())
+    // tenho um servidor que é responsável por fazer o upload de arquivos e armazená-los em um banco de dados MongoDB, estou utilizando multer e gridfs também. Seguindo essa situação que eu citei, como eu posso fazer o uploads de vários arquivos de uma vez?
 })
 
 routes.post('/keepInformations', async(req, res) =>
