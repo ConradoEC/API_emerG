@@ -38,6 +38,10 @@ const postSchema = new mongoose.Schema({
         type: Schema.Types.Mixed,
         allowNull: false
     },
+    post_documentsName: {
+        type: Schema.Types.Mixed,
+        allowNull: false
+    },
     post_description: {
         type: String,
         allowNull: false

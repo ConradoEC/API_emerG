@@ -228,6 +228,7 @@ routes.post('/createPost', async(req, res) =>
             post_ong_logo: '11111',
             post_image: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_png`,
             post_documents: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_pdf`,
+            post_documentsName: createAll[0].post_fileName,
             post_description: createAll[0].post_description,
         })
         .then((response) =>
