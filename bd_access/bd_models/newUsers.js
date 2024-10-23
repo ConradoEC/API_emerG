@@ -1,46 +1,46 @@
 const mongoose = require('mongoose')
 
 const userSchema = new mongoose.Schema({
-    nomeUsuarioF: {
+    cpf: {
         type: String,
         allowNull: false
     },
-    sobrenomeUsuarioF: {
-        type: String,
-        allowNull: false,
-    },
-    cpfUsuarioF: {
+    nome: {
         type: String,
         allowNull: false
     },
-    emailUsuarioF: {
+    email: {
         type: String,
         allowNull: false
     },
-    celularUsuarioF: {
+    telefone: {
         type: String,
         allowNull: false
     },
-    enderecoUsuarioF: {
+    senha: {
         type: String,
         allowNull: false
     },
-    cidadeUsuarioF: {
+    endereco: {
         type: String,
         allowNull: false
     },
-    bairroUsuarioF: {
+    cep: {
         type: String,
         allowNull: false
     },
-    cepUsuarioF: {
+    cidade: {
         type: String,
         allowNull: false
     },
-    doarF: {
-        type: Boolean,
+    foto: {
+        type: String,
         allowNull: false
-    }
+    },
+    descricao: {
+        type: String,
+        allowNull: false
+    },
 })
 
 const newUserModel = mongoose.model('newUsers', userSchema)

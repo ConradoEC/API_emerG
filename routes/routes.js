@@ -15,6 +15,7 @@ const GridFsStorage = require('multer-gridfs-storage').GridFsStorage
 const {connectionMongoDB} = require('../bd_access/connectionMongoDB.js')
 // connectionMongoDB()
 routes.use(express.json())
+// REVER ESSE VAR
 var id_combine
 
 const newMarkerModel = require('../bd_access/bd_models/newMarkers.js')
@@ -23,6 +24,8 @@ const newReportModel = require('../bd_access/bd_models/newReport.js')
 const newInformationModel = require('../bd_access/bd_models/newInformations.js')
 const newOngModel = require('../bd_access/bd_models/newOngs.js')
 const newUserModel = require('../bd_access/bd_models/newUsers.js')
+const novoNichosModel = require('../bd_access/bd_models/novosNichos.js')
+const newCityModel = require('../bd_access/bd_models/newCity.js')
 
 
 const { GridFSBucket } = require('mongodb')
@@ -138,6 +141,17 @@ routes.get('/archieves', async(req, res) =>
     })
 })
 
+routes.get('/users', async(req, res) => {
+    const allUsers = await newUserModel.find({})
+    .then((allUsers) => {
+        console.log(allUsers)
+        res.send(allUsers)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
 routes.get('/downloadArchieve/:filename', (req, res) => {
     // O que é uma Stream? - É uma sequência de dados que pode ser lida ou escrita. São usados para manipular dados, como arquivos e dados de rede.
     gfs.openDownloadStreamByName(req.params.filename)
@@ -147,6 +161,34 @@ routes.get('/downloadArchieve/:filename', (req, res) => {
     .on('error', (err) => {
         res.send(err)
     })
+    //   console.log(`O arquivo ${req.params.filename} foi carregado`)
+})
+
+routes.get('/nichos', async(req, res) => {
+    const allFilters = {}
+
+    const allNiches = await novoNichosModel.find({})
+    .then((allNiches) => {
+        console.log(allNiches)
+        allFilters['nichos'] = allNiches
+        console.log("Nichos recuperados")
+    })
+    .catch((error) => {
+        console.log(error)
+        res.send("Não foi possível recuperar os nichos.")
+    })
+
+    const allCities = await newCityModel.find({})
+    .then((allCities) => {
+        allFilters['cidades'] = allCities
+        console.log("Cidades recuperadas")
+        console.log(allFilters)
+        res.send(allFilters)
+    })
+    .catch((error) => {
+        console.log(error)
+        res.send("Não foi possível recuperar as cidades.")
+    })  
 })
 
 routes.post('/createMarker', async(req, res) =>
@@ -174,23 +216,71 @@ routes.post('/createMarker', async(req, res) =>
 
 routes.post('/createOngs', async(req, res) => 
 {
-    const newOng = await newOngModel.create({
-        ong_name: req.body.ong_name,
-        ong_description: req.body.ong_description,
-        ong_cnpj: req.body.ong_cnpj,
-        ong_email: req.body.ong_email,
-        ong_phone: req.body.ong_phone,
-        ong_address: req.body.ong_address,
-        ong_cep: req.body.ong_cep,
-        ong_logo: req.body.ong_logo,
-        ong_checked: false,
-        ong_icon: req.body.ong_icon,
-        ong_niche: req.body.ong_niche,
-        ong_stars: 0,
-        ong_city: req.body.ong_city,
-        ong_lat: req.body.ong_lat,
-        ong_lng: req.body.ong_lng
+    crypto.randomBytes(12, async(err, buf) => {
+        id_combine = buf.toString('hex')
+
+        const realNicho = req.body[0].nicho.split('*')
+
+        const newOng = await newOngModel.create({
+            ong_cnpj: req.body[0].cnpj,
+            ong_name: req.body[0].nome,
+            ong_email: req.body[0].email,
+            ong_phone: req.body[0].telefone,
+            ong_password: req.body[0].senha,
+            ong_address: req.body[0].endereco,
+            ong_cep: req.body[0].cep,
+            ong_city: req.body[0].cidade,
+            ong_logo: `http://localhost:3000/downloadArchieve/${id_combine}_png`,
+            ong_description: req.body[0].descricao,
+            ong_checked: false,
+            ong_niche: realNicho[0],
+            ong_stars: 0,
+            ong_lat: req.body[0].lat,
+            ong_lng: req.body[0].lng
+        })
+        .then(async(response) => {
+            res.send("Sua organização foi cadastrada com sucesso")
+            console.log("Ong cadastrada")
+
+            if(realNicho[1] == 'new') {
+                const novoNicho = await novoNichosModel.create({
+                    nicho: realNicho[0]
+                })
+                .then((response) => {
+                    console.log(response)
+                })
+                .catch((error) => {
+                    console.log(error)
+                })
+            }
+
+            const thatCity = await newCityModel.find({
+                city: req.body[0].cidade
+            })
+            .then(async(thatCity) => {
+                console.log(thatCity)
+                if(thatCity.length == 0) {
+                    console.log('saporra funcionou')
+                    const newCity = await newCityModel.create({
+                        city: req.body[0].cidade
+                    })
+                    .then((response) => {
+                        console.log(response)
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                    })
+                }
+            })
+            .catch((error) =>{ 
+                console.log(error)
+            })
+        })
+        .catch((error) => {
+            console.log(error)
+        })
     })
+
 })
 
 routes.post('/createReport', async(req, res) => 
@@ -226,8 +316,8 @@ routes.post('/createPost', async(req, res) =>
             post_ong_name: 'Erick',
             post_ong_email: 'erick@gmail.com',
             post_ong_logo: '11111',
-            post_image: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_png`,
-            post_documents: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_pdf`,
+            post_image: `http://localhost:3000/downloadArchieve/${id_combine}_png`,
+            post_documents: `http://localhost:3000/downloadArchieve/${id_combine}_pdf`,
             post_documentsName: createAll[0].post_fileName,
             post_description: createAll[0].post_description,
         })
@@ -285,23 +375,29 @@ routes.post('/keepInformations', async(req, res) =>
 
 routes.post('/newUser', async(req, res) => 
 {
-    const newUser = await newUserModel.create({
-        nomeUsuarioF: req.body.nomeUsuarioF,
-        sobrenomeUsuarioF: req.body.sobrenomeUsuarioF,
-        cpfUsuarioF: req.body.cpfUsuarioF,
-        emailUsuarioF: req.body.emailUsuarioF,
-        celularUsuarioF: req.body.celularUsuarioF,
-        enderecoUsuarioF: req.body.enderecoUsuarioF,
-        cidadeUsuarioF: req.body.cidadeUsuarioF,
-        bairroUsuarioF: req.body.bairroUsuarioF,
-        cepUsuarioF: req.body.cepUsuarioF,
-        doarF: req.body.doarF
-    })
-    .then((response) => {
-        res.send('Usuário criado com sucesso')
-    })
-    .catch((error) => {
-        console.log(error)
+    crypto.randomBytes(12, async(err, buf) => {
+        id_combine = buf.toString('hex')
+
+        console.log(req.body[0])
+        const newUser = await newUserModel.create({
+            cpf: req.body[0].cpf,
+            nome: req.body[0].nome,
+            email: req.body[0].email,
+            telefone: req.body[0].telefone,
+            senha: req.body[0].senha,
+            endereco: req.body[0].endereco,
+            cep: req.body[0].cep,
+            cidade: req.body[0].cidade,
+            foto:  `http://localhost:3000/downloadArchieve/${id_combine}_png`,
+            descricao: req.body[0].descricao,
+        })
+        .then((response) => {
+            res.send('Usuário criado com sucesso')
+            console.log("Usuário criado")
+        })
+        .catch((error) => {
+            console.log(error)
+        })   
     })
 })
 
