@@ -164,6 +164,38 @@ routes.get('/downloadArchieve/:filename', (req, res) => {
     //   console.log(`O arquivo ${req.params.filename} foi carregado`)
 })
 
+routes.post('/login', async(req, res) => {
+    var ongResponse = 'vazio'
+
+    const thisOng = await newOngModel.find({ong_password: req.body.senha, ong_email: req.body.email})
+    .then((response) => {
+        if(response != [] && response != '') {
+            ongResponse = response
+            res.send(response)
+        }
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+
+    if(ongResponse == 'vazio') {
+        const thisUser = await newUserModel.find({email: req.body.email, senha: req.body.senha})
+        .then((response) => {
+        console.log(response)
+            if(response != [] && response != '') {
+                res.send(response)
+            }
+            else {
+                res.send('Usuário não encontrado')
+            }
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
+
+})
+
 routes.get('/nichos', async(req, res) => {
     const allFilters = {}
 
@@ -196,6 +228,9 @@ routes.post('/createMarker', async(req, res) =>
     const newMarker = await newMarkerModel.create(
     {
         address: req.body.address,
+        userName: req.body.userName,
+        userEmail: req.body.userEmail,
+        userPhone: req.body.userPhone,
         name: req.body.name,
         floodLevel: req.body.floodLevel,
         lat: req.body.lat,
@@ -309,27 +344,50 @@ routes.post('/createPost', async(req, res) =>
     console.log(req.body)
 
      crypto.randomBytes(12, async(err, buf) => {
-        id_combine = buf.toString('hex')
+        id_combine = await buf.toString('hex')
 
-        const newPost = await newPostModel.create({
-            post_id_ong: createAll[0].post_id_ong,
-            post_ong_name: 'Erick',
-            post_ong_email: 'erick@gmail.com',
-            post_ong_logo: '11111',
-            post_image: `http://localhost:3000/downloadArchieve/${id_combine}_png`,
-            post_documents: `http://localhost:3000/downloadArchieve/${id_combine}_pdf`,
-            post_documentsName: createAll[0].post_fileName,
-            post_description: createAll[0].post_description,
-        })
-        .then((response) =>
-        {
-            console.log('Tudo certo')
-            res.send('tudo certo')
-        })
-        .catch((error) => 
-        {
-            console.log('O erro foi: ' + error)
-        })
+        if(createAll[0].post_fileName != '') {
+            const newPost = await newPostModel.create({
+                post_id_ong: createAll[0].post_id_ong,
+                post_ong_name: createAll[0].post_ong_name,
+                post_ong_email: createAll[0].post_email,
+                post_ong_logo: createAll[0].post_logo,
+                post_image: `http://localhost:3000/downloadArchieve/${id_combine}_png`,
+                post_documents: `http://localhost:3000/downloadArchieve/${id_combine}_pdf`,
+                post_documentsName: createAll[0].post_fileName,
+                post_description: createAll[0].post_description,
+            })
+            .then((response) =>
+            {
+                console.log('Tudo certo')
+                res.send('tudo certo')
+            })
+            .catch((error) => 
+            {
+                console.log('O erro foi: ' + error)
+            })
+        }
+        else {
+            const newPost = await newPostModel.create({
+                post_id_ong: createAll[0].post_id_ong,
+                post_ong_name: createAll[0].post_ong_name,
+                post_ong_email: createAll[0].post_email,
+                post_ong_logo: createAll[0].post_logo,
+                post_image: `http://localhost:3000/downloadArchieve/${id_combine}_png`,
+                post_documents: ``,
+                post_documentsName: '',
+                post_description: createAll[0].post_description,
+            })
+            .then((response) =>
+            {
+                console.log('Tudo certo')
+                res.send('tudo certo')
+            })
+            .catch((error) => 
+            {
+                console.log('O erro foi: ' + error)
+            })
+        }
     })
 })
 

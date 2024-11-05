@@ -12,6 +12,18 @@ const newMarkerSchema = new mongoose.Schema({
         type: String,
         allowNull: false,
     },
+    userEmail: {
+        type: String,
+        allowNull: false,
+    },
+    userPhone: {
+        type: String,
+        allowNull: false,
+    },
+    userName: {
+        type: String,
+        allowNull: false,
+    },
     name: {
         type: String,
         allowNull: false,
