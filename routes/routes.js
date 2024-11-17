@@ -289,7 +289,7 @@ routes.post('/createOngs', async(req, res) =>
             ong_address: req.body[0].endereco,
             ong_cep: req.body[0].cep,
             ong_city: req.body[0].cidade,
-            ong_logo: `http://localhost:3000/downloadArchieve/${id_combine}_png`,
+            ong_logo: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_png`,
             ong_description: req.body[0].descricao,
             ong_checked: false,
             ong_niche: realNicho[0],
@@ -376,8 +376,8 @@ routes.post('/createPost', async(req, res) =>
                 post_ong_name: createAll[0].post_ong_name,
                 post_ong_email: createAll[0].post_email,
                 post_ong_logo: createAll[0].post_logo,
-                post_image: `http://localhost:3000/downloadArchieve/${id_combine}_png`,
-                post_documents: `http://localhost:3000/downloadArchieve/${id_combine}_pdf`,
+                post_image: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_png`,
+                post_documents: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_pdf`,
                 post_documentsName: createAll[0].post_fileName,
                 post_description: createAll[0].post_description,
             })
@@ -397,7 +397,7 @@ routes.post('/createPost', async(req, res) =>
                 post_ong_name: createAll[0].post_ong_name,
                 post_ong_email: createAll[0].post_email,
                 post_ong_logo: createAll[0].post_logo,
-                post_image: `http://localhost:3000/downloadArchieve/${id_combine}_png`,
+                post_image: `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_png`,
                 post_documents: ``,
                 post_documentsName: '',
                 post_description: createAll[0].post_description,
@@ -470,7 +470,7 @@ routes.post('/newUser', async(req, res) =>
             endereco: req.body[0].endereco,
             cep: req.body[0].cep,
             cidade: req.body[0].cidade,
-            foto:  `http://localhost:3000/downloadArchieve/${id_combine}_png`,
+            foto:  `https://api-emer-g.vercel.app/downloadArchieve/${id_combine}_png`,
             descricao: req.body[0].descricao,
         })
         .then((response) => {
