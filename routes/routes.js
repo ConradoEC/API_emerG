@@ -26,7 +26,7 @@ const newOngModel = require('../bd_access/bd_models/newOngs.js')
 const newUserModel = require('../bd_access/bd_models/newUsers.js')
 const novoNichosModel = require('../bd_access/bd_models/novosNichos.js')
 const newCityModel = require('../bd_access/bd_models/newCity.js')
-
+const newVolunteerModel = require('../bd_access/bd_models/newVolunteer.js')
 
 const { GridFSBucket } = require('mongodb')
 var gfs
@@ -50,7 +50,7 @@ mongoose.connect(`mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retry
 // const time = String(data.getTime())
 
 // Estamos configurando o multer. Ele é o responsável por tratar o arquivo. Aqui estamos indicando que esse arquivo será armazenado em um banco de dados remoto (através da URL) e que o nome que esse arquivo receberá será o seu nome normal + a data de envio do arquivo e também definimos que o Bucket (GridFS) a ser utilizado é o 'uploads'
-const multerConfig = new GridFsStorage({
+    const multerConfig = new GridFsStorage({
     url: 'mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retryWrites=true&w=majority&appName=emerG',
     file: (req, file) => ({
         bucketName: 'uploads',
@@ -180,13 +180,25 @@ routes.post('/login', async(req, res) => {
 
     if(ongResponse == 'vazio') {
         const thisUser = await newUserModel.find({email: req.body.email, senha: req.body.senha})
-        .then((response) => {
+        .then(async(response) => {
         console.log(response)
             if(response != [] && response != '') {
                 res.send(response)
             }
             else {
-                res.send('Usuário não encontrado')
+                if(req.body.idUser != undefined) {
+                    const thatOng = await newOngModel.findById(req.body.idUser)
+                    .then((response) => {
+                        console.log(response)
+                        res.send(response)
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                    })
+                }
+                else {
+                    res.send('Usuário não encontrado')
+                }
             }
         })
         .catch((error) => {
@@ -194,6 +206,17 @@ routes.post('/login', async(req, res) => {
         })
     }
 
+})
+
+routes.post('/volunteers', async(req, res) => {
+    const allVolunteers = newVolunteerModel.find({ongId: req.body.idUser})
+    .then((response) => {
+        res.send(response)
+        console.log(response)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
 })
 
 routes.get('/nichos', async(req, res) => {
@@ -459,6 +482,22 @@ routes.post('/newUser', async(req, res) =>
     })
 })
 
+routes.post('/newVolunteer', async(req, res) => {
+    const newVolunteer = await newVolunteerModel.create({
+        function: req.body.function,
+        requests: req.body.requests,
+        description: req.body.description,
+        ongId: req.body.ongId,
+        idVolunteer: req.body.idVolunteer
+    })
+    .then((response) => {
+        res.send('Vaga de voluntário criada com sucesso')
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
 routes.delete('/deleteInfo:id', async(req, res) => 
 {
     var indexCounter = 0
@@ -517,6 +556,16 @@ routes.delete('/deleteInfo:id', async(req, res) =>
         //         console.log('Não deletado')
         //     })
         // }
+    })
+})
+
+routes.delete('/deleteVolunteer:id', async(req, res) => {
+    const deleteVolunteer = await newVolunteerModel.deleteOne({idVolunteer: req.params.id})
+    .then((response) => {
+        res.send(response)
+    })
+    .catch((error) => {
+        res.send(error)
     })
 })
 
