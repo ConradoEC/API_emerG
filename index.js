@@ -9,7 +9,10 @@ const cors = require('cors')
 //     "Content-type": "application/json"
 // }))
 
-app.use(cors({AccessControlAllowOrigin: '*'}))
+app.use(cors({
+    origin: '*',
+    AccessControlAllowOrigin: '*',
+}))
 app.use(express.json())
 app.use(routes)
 

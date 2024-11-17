@@ -8,6 +8,7 @@ const multer = require('multer')
 const fs = require('fs')
 const mongodb = require('mongodb')
 const Grid = require('gridfs-stream')
+
 // O multer-gridfs-storage recebe o arquivo e o passa para o GridFS.
 // O GridFS divide o arquivo em chunks menores e armazena cada chunk na coleção fs.chunks
 // const GridFsStorage = require('multer-gridfs-storage').GridFsStorage
