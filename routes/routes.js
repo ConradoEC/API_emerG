@@ -28,6 +28,8 @@ const newUserModel = require('../bd_access/bd_models/newUsers.js')
 const novoNichosModel = require('../bd_access/bd_models/novosNichos.js')
 const newCityModel = require('../bd_access/bd_models/newCity.js')
 const newVolunteerModel = require('../bd_access/bd_models/newVolunteer.js')
+const newLikeFollowerModel = require('../bd_access/bd_models/newLikesFollowers.js')
+
 
 const { GridFSBucket } = require('mongodb')
 var gfs
@@ -294,6 +296,8 @@ routes.post('/createOngs', async(req, res) =>
             ong_checked: false,
             ong_niche: realNicho[0],
             ong_stars: 0,
+            ong_likes: 0,
+            ong_followers: 0,
             ong_lat: req.body[0].lat,
             ong_lng: req.body[0].lng
         })
@@ -497,6 +501,41 @@ routes.post('/newVolunteer', async(req, res) => {
     .catch((error) => {
         console.log(error)
     })
+})
+
+routes.post('/likeOrFollow', async(req, res) => {
+    const newlikeOrFollow = await newLikeFollowerModel.create({
+        type: req.body.type,
+        idUser: req.body.idUser,
+        nameUser: req.body.nameUser,
+        recentQuant: req.body.recentQuant,
+        idOng: req.body.idOng
+    })
+    .then((response) => {
+        console.log(response)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+
+    if(req.body.type == 'like') {
+        const updateOngLike = await newOngModel.findByIdAndUpdate({_id: req.body.idOng}, {ong_likes: req.body.recentQuant})
+        .then((response) => {
+            console.log(response)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
+    else if(req.body.type == 'follower') {
+        const updateOngFollower = await newOngModel.findByIdAndUpdate({_id: req.body.idOng}, {ong_followers: req.body.recentQuant})
+        .then((response) => {
+            console.log(response)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
 })
 
 routes.delete('/deleteInfo:id', async(req, res) => 

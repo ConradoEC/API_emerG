@@ -54,6 +54,14 @@ const ongSchema = new mongoose.Schema({
         type: Number,
         allowNull: false
     },
+    ong_likes: {
+        type: Number,
+        allowNull: false
+    },
+    ong_followers: {
+        type: Number,
+        allowNull: false
+    },
     ong_lat: {
         type: Number,
         allowNull: false
