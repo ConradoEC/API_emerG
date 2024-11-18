@@ -222,6 +222,19 @@ routes.post('/volunteers', async(req, res) => {
     })
 })
 
+routes.post('/myLikeFollower', (req, res) => {
+    console.log(req.body.idUser)
+    console.log(req.body.idOng)
+    const myLikeFollower = newLikeFollowerModel.find({idUser: req.body.idUser, idOng: req.body.idOng})
+    .then((response) => {
+        console.log(response)
+        res.send(response)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
 routes.get('/nichos', async(req, res) => {
     const allFilters = {}
 
