@@ -513,6 +513,7 @@ routes.post('/likeOrFollow', async(req, res) => {
     })
     .then((response) => {
         console.log(response)
+        res.send("Informação armazenada")
     })
     .catch((error) => {
         console.log(error)
