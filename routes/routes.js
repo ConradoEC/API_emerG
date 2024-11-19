@@ -29,7 +29,9 @@ const novoNichosModel = require('../bd_access/bd_models/novosNichos.js')
 const newCityModel = require('../bd_access/bd_models/newCity.js')
 const newVolunteerModel = require('../bd_access/bd_models/newVolunteer.js')
 const newLikeFollowerModel = require('../bd_access/bd_models/newLikesFollowers.js')
-
+const newMetaModel = require('../bd_access/bd_models/newMeta.js')
+const newCategoryDonateModel = require('../bd_access/bd_models/newCategoryDonate.js')
+const newDoadorModel = require('../bd_access/bd_models/doadores.js')
 
 const { GridFSBucket } = require('mongodb')
 var gfs
@@ -260,6 +262,64 @@ routes.get('/nichos', async(req, res) => {
         console.log(error)
         res.send("Não foi possível recuperar as cidades.")
     })  
+})
+
+routes.post('/myMeta', async(req, res) => {
+    const myMeta = await newMetaModel.find({idOng: req.body.idOng})
+    .then((response) => {
+        console.log(response)
+        res.send(response)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
+routes.post('/doadoresSim', async(req, res) => {
+    const alldoadores = []
+
+    const doadoresSim = await newDoadorModel.find({idOng: req.body.idOng})
+    .then((response) => {
+        console.log(response)
+        response.forEach(async(item) => {
+            const thisDoador = await newUserModel.findById(item.idDoador)
+        })
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
+routes.get('/allCategoriesDonate', (req, res) => {
+    const allCategoriesDonate = newCategoryDonateModel.find({})
+    .then((response) => {
+        res.send(response)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
+routes.post('/allMyLikesFollowersStars', async(req, res) => {
+    const totalInfo = []
+    const allMyLikesFollowersStars = await newLikeFollowerModel.find({idOng: req.body.idOng})
+    .then((response) => {
+        totalInfo.push(response)
+        console.log(response)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+
+    const allMyFollowing = await newLikeFollowerModel.find({idUser: req.body.idOng})
+    .then(async(response) => {
+        await totalInfo.push(response)
+        console.log(response)
+        res.send(totalInfo)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
 })
 
 routes.post('/createMarker', async(req, res) =>
@@ -517,12 +577,23 @@ routes.post('/newVolunteer', async(req, res) => {
 })
 
 routes.post('/likeOrFollow', async(req, res) => {
+    if(req.body.type == 'star') {
+        const deleteThisStar = await newLikeFollowerModel.deleteOne({type: 'star', idUser: req.body.idUser, idOng: req.body.idOng})
+        .then((response) => {
+            console.log(response)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
+
     const newlikeOrFollow = await newLikeFollowerModel.create({
         type: req.body.type,
         idUser: req.body.idUser,
         nameUser: req.body.nameUser,
         recentQuant: req.body.recentQuant,
-        idOng: req.body.idOng
+        idOng: req.body.idOng,
+        nameOng: req.body.nameOng
     })
     .then((response) => {
         console.log(response)
@@ -550,6 +621,66 @@ routes.post('/likeOrFollow', async(req, res) => {
             console.log(error)
         })
     }
+    else if(req.body.type == 'star') {
+        const allStarThatOng = await newLikeFollowerModel.find({type: 'star', idOng: req.body.idOng})
+        .then(async(response) => {
+            var somaStars = 0
+            response.forEach((item) => {
+                somaStars = somaStars + item.recentQuant
+            })
+            const updateStarOng = await newOngModel.findByIdAndUpdate({_id: req.body.idOng}, {ong_stars: (somaStars/response.length).toFixed(0)})
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
+})
+
+routes.post('/newMeta', async(req, res) => {
+
+    const nameMeta = req.body.nomeItem.split('__')
+
+    const newMeta = await newMetaModel.create({
+        idOng: req.body.idOng,
+        nomeItem: nameMeta[0],
+        quant: req.body.quant,
+        quantDoa: 0,
+    })
+    .then((response) => {
+        console.log(response)
+        res.send('Meta criada')
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+
+
+    if(nameMeta[1] == 'new') {
+        const newCategoryDonate = await newCategoryDonateModel.create({
+            nameCategory: nameMeta[0]
+        })
+        .then((response) => {
+            console.log(response)
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+    }
+})
+
+routes.post('/doador', async(req, res) => {
+    const doador = await newDoadorModel.create({
+        idDoador: req.body.idDoador,
+        idOng: req.body.idOng,
+        quantDoada: req.body.quantDoada
+    })
+    .then((response) => {
+        console.log(response)
+        res.send('Foi')
+    })
+    .catch((error) => {
+        console.log(error)
+    })
 })
 
 routes.delete('/deleteInfo:id', async(req, res) => 

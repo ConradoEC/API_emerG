@@ -20,6 +20,10 @@ const likeFollowerSchema = new mongoose.Schema({
     idOng: {
         type: String,
         allowNull: false
+    },
+    nameOng: {
+        type: String,
+        allowNull: false
     }
 })
 
