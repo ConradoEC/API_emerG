@@ -265,9 +265,13 @@ routes.get('/nichos', async(req, res) => {
 })
 
 routes.post('/myMeta', async(req, res) => {
+    const thatMeta = []
+    const fakeMeta = []
     const myMeta = await newMetaModel.find({idOng: req.body.idOng})
     .then((response) => {
         console.log(response)
+        thatMeta.push(response)
+        thatMeta.push(fakeMeta)
         res.send(response)
     })
     .catch((error) => {
