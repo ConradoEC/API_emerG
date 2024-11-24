@@ -14,7 +14,14 @@ const Grid = require('gridfs-stream')
 // const GridFsStorage = require('multer-gridfs-storage').GridFsStorage
 const GridFsStorage = require('multer-gridfs-storage').GridFsStorage
 const {connectionMongoDB} = require('../bd_access/connectionMongoDB.js')
-// connectionMongoDB()
+const { GridFSBucket } = require('mongodb')
+var gfs
+async function initialize() {
+    gfs = await connectionMongoDB()
+}
+
+initialize()
+
 routes.use(express.json())
 // REVER ESSE VAR
 var id_combine
@@ -33,22 +40,19 @@ const newMetaModel = require('../bd_access/bd_models/newMeta.js')
 const newCategoryDonateModel = require('../bd_access/bd_models/newCategoryDonate.js')
 const newDoadorModel = require('../bd_access/bd_models/doadores.js')
 
-const { GridFSBucket } = require('mongodb')
-var gfs
-
-mongoose.connect(`mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retryWrites=true&w=majority&appName=emerG`)
-    .then(async() => 
-    {
-        console.log('Banco conectado')
-        const db = await mongoose.connection.db
-        // Essa parte é a configuração do GridFS, que seria uma ferramenta que vai fragmentar o arquivo em pequenas partes para que ele possa ser armazenado. O nome dado para ele foi 'uploads'
-        gfs = await new GridFSBucket(db, {bucketName: 'uploads'})
-        // const collections = await db.listCollections().toArray()
-    })    
-    .catch((error) =>
-    {
-        console.log('Não foi possível conectar por causa do erro ---> ' + error)
-    })
+// mongoose.connect(`mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retryWrites=true&w=majority&appName=emerG`)
+//     .then(async() => 
+//     {
+//         console.log('Banco conectado')
+//         const db = await mongoose.connection.db
+//         // Essa parte é a configuração do GridFS, que seria uma ferramenta que vai fragmentar o arquivo em pequenas partes para que ele possa ser armazenado. O nome dado para ele foi 'uploads'
+//         gfs = await new GridFSBucket(db, {bucketName: 'uploads'})
+//         // const collections = await db.listCollections().toArray()
+//     })    
+//     .catch((error) =>
+//     {
+//         console.log('Não foi possível conectar por causa do erro ---> ' + error)
+//     })
 
 
 // const data = new Date()
