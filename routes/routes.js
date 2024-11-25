@@ -40,26 +40,24 @@ const newMetaModel = require('../bd_access/bd_models/newMeta.js')
 const newCategoryDonateModel = require('../bd_access/bd_models/newCategoryDonate.js')
 const newDoadorModel = require('../bd_access/bd_models/doadores.js')
 
-// mongoose.connect(`mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retryWrites=true&w=majority&appName=emerG`)
-//     .then(async() => 
-//     {
-//         console.log('Banco conectado')
-//         const db = await mongoose.connection.db
-//         // Essa parte é a configuração do GridFS, que seria uma ferramenta que vai fragmentar o arquivo em pequenas partes para que ele possa ser armazenado. O nome dado para ele foi 'uploads'
-//         gfs = await new GridFSBucket(db, {bucketName: 'uploads'})
-//         // const collections = await db.listCollections().toArray()
-//     })    
-//     .catch((error) =>
-//     {
-//         console.log('Não foi possível conectar por causa do erro ---> ' + error)
-//     })
-
-
-// const data = new Date()
-// const time = String(data.getTime())
+async function quantDoa(content) {
+    try{
+        await newDoadorModel.create({
+            idDoador: req.body.idDoador,
+            idOng: req.body.idOng,
+            quantDoada: req.body.quantDoada
+        })
+        const thatDonate = await newMetaModel.findById({_id: req.body.idOng})
+        await newMetaModel.findByIdAndUpdate({_id: req.body.idOng}, {quantDoa: content.quantDoada + thatDonate.quantDoa})
+    }
+    catch (erro) {
+        console.log("Não foi possível fazer a conexão por conta do erro: " + erro)
+        process.exit()
+    }
+}
 
 // Estamos configurando o multer. Ele é o responsável por tratar o arquivo. Aqui estamos indicando que esse arquivo será armazenado em um banco de dados remoto (através da URL) e que o nome que esse arquivo receberá será o seu nome normal + a data de envio do arquivo e também definimos que o Bucket (GridFS) a ser utilizado é o 'uploads'
-    const multerConfig = new GridFsStorage({
+const multerConfig = new GridFsStorage({
     url: 'mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/?retryWrites=true&w=majority&appName=emerG',
     file: (req, file) => ({
         bucketName: 'uploads',
@@ -677,18 +675,27 @@ routes.post('/newMeta', async(req, res) => {
 })
 
 routes.post('/doador', async(req, res) => {
-    const doador = await newDoadorModel.create({
-        idDoador: req.body.idDoador,
-        idOng: req.body.idOng,
-        quantDoada: req.body.quantDoada
-    })
-    .then((response) => {
-        console.log(response)
-        res.send('Foi')
-    })
-    .catch((error) => {
-        console.log(error)
-    })
+    // const doador = await newDoadorModel.create({
+    //     idDoador: req.body.idDoador,
+    //     idOng: req.body.idOng,
+    //     quantDoada: req.body.quantDoada
+    // })
+    // .then((response) => {
+    //     const thatDonate = newMetaModel.findById({_id: req.body.idOng})
+    //     .then((response) => {
+    //         console.log(response)
+    //     })
+    //     .catch((error) => {
+    //         console.log(error)
+    //     })
+    //     const updateDoacoes = newMetaModel.findByIdAndUpdate({_id: req.body.idOng}, {quantDoa: })
+    //     res.send('Foi')
+    // })
+    // .catch((error) => {
+    //     console.log(error)
+    // })
+
+    quantDoa(req.body)
 })
 
 routes.delete('/deleteInfo:id', async(req, res) => 
