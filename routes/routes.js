@@ -43,12 +43,13 @@ const newDoadorModel = require('../bd_access/bd_models/doadores.js')
 async function quantDoa(content) {
     try{
         await newDoadorModel.create({
-            idDoador: req.body.idDoador,
-            idOng: req.body.idOng,
-            quantDoada: req.body.quantDoada
+            idDoador: content.idDoador,
+            idOng: content.idOng,
+            quantDoada: content.quantDoada
         })
-        const thatDonate = await newMetaModel.findById({_id: req.body.idOng})
-        await newMetaModel.findByIdAndUpdate({_id: req.body.idOng}, {quantDoa: content.quantDoada + thatDonate.quantDoa})
+        const thatDonate = await newMetaModel.find({idOng: content.idOng})
+        await newMetaModel.findByIdAndUpdate({_id: thatDonate[0]._id}, {quantDoa: (Number(content.quantDoada) + Number(thatDonate[0].quantDoa))})
+        console.log("Deu tudo certo")
     }
     catch (erro) {
         console.log("Não foi possível fazer a conexão por conta do erro: " + erro)
@@ -695,7 +696,8 @@ routes.post('/doador', async(req, res) => {
     //     console.log(error)
     // })
 
-    quantDoa(req.body)
+    await quantDoa(req.body)
+    res.send("Deu tudo certo")
 })
 
 routes.delete('/deleteInfo:id', async(req, res) => 
