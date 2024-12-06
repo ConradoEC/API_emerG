@@ -3,7 +3,6 @@ const app = express()
 const routes = require('./routes/routes')
 const PORT = 3000
 const cors = require('cors')
-
 // app.use(cors({
 //     "Access-Control-Allow-Origin": "*",
 //     "Content-type": "application/json"

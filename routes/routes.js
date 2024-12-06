@@ -9,6 +9,7 @@ const fs = require('fs')
 const mongodb = require('mongodb')
 const Grid = require('gridfs-stream')
 
+
 // O multer-gridfs-storage recebe o arquivo e o passa para o GridFS.
 // O GridFS divide o arquivo em chunks menores e armazena cada chunk na coleção fs.chunks
 // const GridFsStorage = require('multer-gridfs-storage').GridFsStorage
@@ -39,6 +40,8 @@ const newLikeFollowerModel = require('../bd_access/bd_models/newLikesFollowers.j
 const newMetaModel = require('../bd_access/bd_models/newMeta.js')
 const newCategoryDonateModel = require('../bd_access/bd_models/newCategoryDonate.js')
 const newDoadorModel = require('../bd_access/bd_models/doadores.js')
+const newChatModel = require('../bd_access/bd_models/newChat.js')
+
 
 async function quantDoa(content) {
     try{
@@ -112,9 +115,10 @@ routes.get('/reports', (req, res) =>
 
 routes.post('/informations', async(req, res) =>
 {
-    const allInformations = await newInformationModel.find({idUsuario: req.body[0].user_id})
+    const allInformations = await newInformationModel.find({idUsuario: req.body.user_id})
     .then((allInformations) =>
     {
+        console.log(allInformations)
         res.send(allInformations)
     })
     .catch((error) => 
@@ -221,6 +225,16 @@ routes.post('/volunteers', async(req, res) => {
     .then((response) => {
         res.send(response)
         console.log(response)
+    })
+    .catch((error) => {
+        console.log(error)
+    })
+})
+
+routes.post('/thisChat', async (req, res) => {
+    const thisChat = await newChatModel.find({remetente: req.body.remetente, destinatario: req.body.destinatario})
+    .then((response) => {
+        res.send(response)
     })
     .catch((error) => {
         console.log(error)
@@ -521,6 +535,39 @@ routes.post('/uploadFile', upload.array('files'), async(req, res) =>
 
 routes.post('/keepInformations', async(req, res) =>
 {    
+    var contentCreateInfo = {
+        type: 'follower',
+        idUser: req.body.idUsuario,
+        recentQuant: 0,
+    }
+
+    if(req.body.typeInfo == 'following') {
+        try{
+            const thisUser = await newUserModel.find({_id: req.body.idUsuario})
+            console.log(thisUser)
+
+            if(thisUser.length == 0) {
+                const thisOngBecauseNoUser = await newOngModel.find({_id: req.body.idUsuario})
+                contentCreateInfo.nameUser = thisOngBecauseNoUser[0].ong_name
+            }
+            else {
+                contentCreateInfo.nameUser = thisUser[0].nome
+            }
+            
+            const thisPost = await newPostModel.find({_id: req.body.id_post})
+            const thisOng = await newOngModel.find({_id: thisPost[0].post_id_ong})
+            contentCreateInfo.idOng = thisOng[0]._id
+            contentCreateInfo.nameOng = thisOng[0].ong_name
+
+            await newLikeFollowerModel.create(contentCreateInfo)
+            await newOngModel.findByIdAndUpdate({_id: thisOng[0]._id}, {ong_followers: (thisOng[0].ong_followers + 1)})
+        }
+        catch (error) {
+            console.log("Ocorreu um erro: " + error)
+            process.exit()
+        }
+    }
+
     const keepInformations = await newInformationModel.create({
         typeInfo: req.body.typeInfo,
         id_post: req.body.id_post,
@@ -700,64 +747,71 @@ routes.post('/doador', async(req, res) => {
     res.send("Deu tudo certo")
 })
 
+routes.post('/newChat', async(req, res) => {
+    try {
+        const thatChat = await newChatModel.find({remetente: req.body.remetente, destinatario: req.body.destinatario})
+
+        if(thatChat != [] && thatChat != '') {
+            await newChatModel.findByIdAndUpdate({_id: thatChat[0]._id}, {})
+        }
+        else {
+            await newChatModel.create({
+                remetente: req.body.remetente,
+                destinatario: req.body.destinatario,
+                mensagens: req.body.mensagens
+            })
+        }
+
+        res.send('Deu certo')
+    }   
+    catch (error) {
+        console.log(error)
+        res.send('Erro')
+    }
+
+})
+
 routes.delete('/deleteInfo:id', async(req, res) => 
 {
     var indexCounter = 0
     var bigId = await req.params.id
     someIds = await bigId.split('_')
-    await someIds.pop()
+    // await someIds.pop()
     console.log(someIds)
 
     someIds.forEach(async(item) => 
     {
-        console.log(item)
         indexCounter = indexCounter + 1
-        console.log(indexCounter)
 
-        if(someIds.indexOf(item) % 2 == 0)
+        if(someIds.indexOf(item) % 3 == 0)
         {
-            // console.log(someIds.indexOf(item))
-            // console.log(item)
-            console.log(indexCounter)
-            const deleteInfo = await newInformationModel.deleteOne({id_post: item, typeInfo: someIds[indexCounter]})
-            .then(() => 
-            {
-                // console.log('Deletado')
-                // console.log(deleteInfo)
-            })
-            .catch(() => 
-            {
-                console.log('Não deletado')
-            })
+            if(someIds[indexCounter] == 'following') {
+                try {
+                    const thisInfo = await newInformationModel.find({id_post: item, typeInfo: someIds[indexCounter], idUsuario: someIds[indexCounter + 1]})
+                    const thisPost = await newPostModel.find({_id: thisInfo[0].id_post})
+                    const thisOngId = await newOngModel.find({_id: thisPost[0].post_id_ong})
+                    const thatLikeFollow = await newLikeFollowerModel.find({idUser: someIds[indexCounter - 1], idOng: thisPost[0].post_id_ong, type: 'follower'})
+
+                    await newLikeFollowerModel.deleteOne({idUser: someIds[indexCounter - 1], idOng: thisPost[0].post_id_ong, type: 'follower'})
+                    await newInformationModel.deleteOne({id_post: item, typeInfo: someIds[indexCounter - 2], idUsuario: someIds[indexCounter - 1]})
+                    await newOngModel.findByIdAndUpdate({_id: thisOngId[0]._id}, {ong_followers: (thisOngId[0].ong_followers - 1)})
+                    res.send('Informação deletada com sucesso.')
+                }
+                catch (error) {
+                    console.log('Ocorreu um erro: ' + error)
+                    res.send('Ocorreu um erro: ' + error)
+                }
+            }
+            else {
+                const deleteInfo = await newInformationModel.deleteOne({id_post: item, typeInfo: someIds[indexCounter]})
+                .then((response) => {
+                    res.send('Informação deletada com sucesso.')
+                })
+                .catch((error) => {
+                    console.log(error)
+                })
+            }
         }
-
-        // if(item == 'following')
-        // {
-        //     console.log('Este é o item: ' + item)
-        // }
-        // else if(item == 'liked')
-        // {
-        //     console.log('Este é o item: ' + item)
-        // }
-        // else if(item == 'saved')
-        // {
-        //     console.log('Este é o item: ' + item)
-        // }
-        // else
-        // {
-        //     console.log('Este é o item: ' + item)
-
-        //     const deleteInfo = await newInformationModel.deleteOne({id_post: item, typeInfo: someIds[someIds.indexOf(item) + 1]})
-        //     .then(() => 
-        //     {
-        //         console.log('Deletado')
-        //         // console.log(deleteInfo)
-        //     })
-        //     .catch(() => 
-        //     {
-        //         console.log('Não deletado')
-        //     })
-        // }
     })
 })
 
