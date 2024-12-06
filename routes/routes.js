@@ -750,9 +750,12 @@ routes.post('/doador', async(req, res) => {
 routes.post('/newChat', async(req, res) => {
     try {
         const thatChat = await newChatModel.find({remetente: req.body.remetente, destinatario: req.body.destinatario})
-
+        
         if(thatChat != [] && thatChat != '') {
-            await newChatModel.findByIdAndUpdate({_id: thatChat[0]._id}, {})
+            var thatThing = thatChat[0].mensagens[0]
+            thatThing.push(req.body.mensagens[0])
+            console.log(thatThing)
+            await newChatModel.findByIdAndUpdate({_id: thatChat[0]._id}, {mensagens: thatThing})
         }
         else {
             await newChatModel.create({
