@@ -7,7 +7,7 @@ const mongoose = require('mongoose')
 const multer = require('multer')
 const fs = require('fs')
 const mongodb = require('mongodb')
-const Grid = require('gridfs-stream')
+const Grid = require('gridfs-stream'
 
 
 // O multer-gridfs-storage recebe o arquivo e o passa para o GridFS.
