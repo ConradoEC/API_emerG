@@ -7,7 +7,7 @@ var db
 
 const connectionMongoDB = async() =>
 {
-    return await mongoose.connect(`mongodb+srv://emerG:emerG2022@emerg.mlrb30g.mongodb.net/test?retryWrites=true&w=majority&appName=emerG`)
+    return await mongoose.connect(`mongodb+srv://erickconrado317_db_user:RMwDrQ5du1NRnPMw@cluster0.auqklsr.mongodb.net/?appName=Cluster0`)
     .then(async() => 
     {
         console.log('Banco conectado')

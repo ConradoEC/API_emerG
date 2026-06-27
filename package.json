@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "reload": "nodemon index.js"
+    "reload": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
