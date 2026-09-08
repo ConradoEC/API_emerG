@@ -193,7 +193,8 @@ routes.post('/login', async(req, res) => {
     if(ongResponse == 'vazio') {
         const thisUser = await newUserModel.find({email: req.body.email, senha: req.body.senha})
         .then(async(response) => {
-        console.log(response)
+            console.log(response)
+            
             if(response != [] && response != '') {
                 res.send(response)
             }
@@ -217,7 +218,6 @@ routes.post('/login', async(req, res) => {
             console.log(error)
         })
     }
-
 })
 
 routes.post('/volunteers', async(req, res) => {
@@ -465,7 +465,7 @@ routes.post('/createPost', async(req, res) =>
     var createAll = await req.body
     console.log(req.body)
 
-     crypto.randomBytes(12, async(err, buf) => {
+    crypto.randomBytes(12, async(err, buf) => {
         id_combine = await buf.toString('hex')
 
         if(createAll[0].post_fileName != '') {
